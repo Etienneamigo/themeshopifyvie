@@ -1,0 +1,378 @@
+{%- comment -%}
+  Homepage Reviews Carousel
+  Displays approved, homepage-visible reviews as an elegant continuous marquee.
+{%- endcomment -%}
+
+{%- liquid
+  assign all_reviews = shop.metaobjects.review.values
+  assign visible_count = 0
+
+  for review in all_reviews
+    assign review_status = review.status.value | downcase
+    if review_status == 'approved' and review.homepage_visible.value == true
+      assign visible_count = visible_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if visible_count > 0 -%}
+  <div
+    class="homepage-reviews section spacing-style color-{{ section.settings.color_scheme }}"
+    style="{% render 'spacing-style', settings: section.settings %}"
+  >
+    <div class="homepage-reviews__header page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="homepage-reviews__title">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="homepage-reviews__subtitle">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="homepage-reviews__marquee" data-speed="{{ section.settings.speed }}" data-direction="{{ section.settings.direction }}">
+      <div class="homepage-reviews__track">
+        <div class="homepage-reviews__slides">
+          {%- for review in all_reviews -%}
+            {%- liquid
+              assign review_status = review.status.value | downcase
+            -%}
+            {%- if review_status == 'approved' and review.homepage_visible.value == true -%}
+              <div class="homepage-reviews__card">
+                <div class="homepage-reviews__card-stars">
+                  {%- render 'review-stars', rating: review.rating.value, size: 'small' -%}
+                </div>
+                {%- if review.title.value != blank -%}
+                  <p class="homepage-reviews__card-title">{{ review.title.value }}</p>
+                {%- endif -%}
+                <p class="homepage-reviews__card-body">{{ review.body.value | truncate: 180 }}</p>
+                <div class="homepage-reviews__card-footer">
+                  <span class="homepage-reviews__card-author">{{ review.author_name.value }}</span>
+                  {%- if review.verified_badge.value == true -%}
+                    <span class="homepage-reviews__card-verified">
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M10 0L12.2 3.6L16.18 2.5L15.68 6.6L19.51 8.54L16.8 11.6L18.09 15.56L14.02 15.56L12.2 19.14L10 16L7.8 19.14L5.98 15.56L1.91 15.56L3.2 11.6L0.49 8.54L4.32 6.6L3.82 2.5L7.8 3.6L10 0Z" fill="currentColor"/>
+                        <path d="M7 10L9 12L13 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Vérifié
+                    </span>
+                  {%- endif -%}
+                  {%- assign review_product = review.product.value -%}
+                  {%- if review_product != blank -%}
+                    <a href="{{ review_product.url }}" class="homepage-reviews__card-product">
+                      {{ review_product.title }}
+                    </a>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+        {%- comment -%} Duplicate for seamless loop {%- endcomment -%}
+        <div class="homepage-reviews__slides" aria-hidden="true">
+          {%- for review in all_reviews -%}
+            {%- liquid
+              assign review_status = review.status.value | downcase
+            -%}
+            {%- if review_status == 'approved' and review.homepage_visible.value == true -%}
+              <div class="homepage-reviews__card">
+                <div class="homepage-reviews__card-stars">
+                  {%- render 'review-stars', rating: review.rating.value, size: 'small' -%}
+                </div>
+                {%- if review.title.value != blank -%}
+                  <p class="homepage-reviews__card-title">{{ review.title.value }}</p>
+                {%- endif -%}
+                <p class="homepage-reviews__card-body">{{ review.body.value | truncate: 180 }}</p>
+                <div class="homepage-reviews__card-footer">
+                  <span class="homepage-reviews__card-author">{{ review.author_name.value }}</span>
+                  {%- if review.verified_badge.value == true -%}
+                    <span class="homepage-reviews__card-verified">
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M10 0L12.2 3.6L16.18 2.5L15.68 6.6L19.51 8.54L16.8 11.6L18.09 15.56L14.02 15.56L12.2 19.14L10 16L7.8 19.14L5.98 15.56L1.91 15.56L3.2 11.6L0.49 8.54L4.32 6.6L3.82 2.5L7.8 3.6L10 0Z" fill="currentColor"/>
+                        <path d="M7 10L9 12L13 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Vérifié
+                    </span>
+                  {%- endif -%}
+                  {%- assign review_product = review.product.value -%}
+                  {%- if review_product != blank -%}
+                    <a href="{{ review_product.url }}" class="homepage-reviews__card-product">
+                      {{ review_product.title }}
+                    </a>
+                  {%- endif -%}
+                </div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      document.addEventListener('DOMContentLoaded', function() {
+        var marquees = document.querySelectorAll('.homepage-reviews__marquee');
+        marquees.forEach(function(marquee) {
+          var track = marquee.querySelector('.homepage-reviews__track');
+          if (!track) return;
+
+          var speed = parseInt(marquee.dataset.speed) || 30;
+          var direction = marquee.dataset.direction || 'normal';
+
+          track.style.animationDuration = speed + 's';
+          track.style.animationDirection = direction;
+
+          marquee.addEventListener('mouseenter', function() {
+            track.style.animationPlayState = 'paused';
+          });
+          marquee.addEventListener('mouseleave', function() {
+            track.style.animationPlayState = 'running';
+          });
+        });
+      });
+    })();
+  </script>
+{%- endif -%}
+
+{% stylesheet %}
+  .homepage-reviews {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .homepage-reviews__header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 0 var(--page-gutter);
+  }
+
+  .homepage-reviews__title {
+    font-family: var(--font-primary--family);
+    font-size: var(--font-size--h4);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .homepage-reviews__subtitle {
+    font-family: var(--font-body--family);
+    font-size: 0.9375rem;
+    opacity: 0.6;
+    margin: 0;
+    font-style: italic;
+  }
+
+  .homepage-reviews__marquee {
+    width: 100%;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  }
+
+  .homepage-reviews__track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: homepage-reviews-scroll 30s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .homepage-reviews__track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+      justify-content: center;
+      padding: 0 var(--page-gutter);
+    }
+  }
+
+  @keyframes homepage-reviews-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .homepage-reviews__slides {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .homepage-reviews__card {
+    flex-shrink: 0;
+    width: 340px;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.08);
+    border-radius: 6px;
+    background: rgb(var(--color-foreground-rgb) / 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .homepage-reviews__card:hover {
+    border-color: #C9A96E40;
+  }
+
+  .homepage-reviews__card-stars {
+    margin-bottom: 0.125rem;
+  }
+
+  .homepage-reviews__card-title {
+    font-family: var(--font-primary--family);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .homepage-reviews__card-body {
+    font-family: var(--font-body--family);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    opacity: 0.75;
+    margin: 0;
+    white-space: normal;
+    flex-grow: 1;
+  }
+
+  .homepage-reviews__card-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgb(var(--color-foreground-rgb) / 0.06);
+    margin-top: 0.25rem;
+  }
+
+  .homepage-reviews__card-author {
+    font-family: var(--font-primary--family);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .homepage-reviews__card-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.6875rem;
+    font-family: var(--font-body--family);
+    color: #C9A96E;
+    letter-spacing: 0.02em;
+  }
+
+  .homepage-reviews__card-verified svg {
+    color: #C9A96E;
+  }
+
+  .homepage-reviews__card-product {
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    opacity: 0.5;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-left: auto;
+    color: inherit;
+    transition: opacity 0.2s ease;
+  }
+
+  .homepage-reviews__card-product:hover {
+    opacity: 0.8;
+  }
+
+  @media (max-width: 749px) {
+    .homepage-reviews__card {
+      width: 280px;
+      padding: 1.25rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Avis clients — Carousel",
+  "class": "homepage-reviews-section",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Ce que nos clientes en disent"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Sous-titre",
+      "default": "Des bijoux qui racontent une histoire"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Vitesse du défilement (secondes)",
+      "min": 15,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "default": 35
+    },
+    {
+      "type": "select",
+      "id": "direction",
+      "label": "Direction",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Vers la gauche"
+        },
+        {
+          "value": "reverse",
+          "label": "Vers la droite"
+        }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Palette de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Espacement"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Haut",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bas",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Avis clients — Carousel",
+      "category": "Contenu"
+    }
+  ]
+}
+{% endschema %}

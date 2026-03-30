@@ -1,0 +1,24 @@
+{%- doc -%}
+  Renders star icons for a rating value (1-5).
+  @param {number} rating - The rating value (1-5)
+  @param {string} size - Optional size: 'small' (14px), 'medium' (18px, default), 'large' (22px)
+{%- enddoc -%}
+
+{%- liquid
+  assign star_size = size | default: 'medium'
+  assign rating_value = rating | default: 0 | times: 1
+-%}
+
+<span class="review-stars review-stars--{{ star_size }}" aria-label="{{ rating_value }} sur 5 étoiles">
+  {%- for i in (1..5) -%}
+    {%- if i <= rating_value -%}
+      <svg class="review-star review-star--filled" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M10 1.5L12.39 6.9L18.18 7.44L13.83 11.29L15.18 17L10 13.77L4.82 17L6.17 11.29L1.82 7.44L7.61 6.9L10 1.5Z" fill="currentColor"/>
+      </svg>
+    {%- else -%}
+      <svg class="review-star review-star--empty" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M10 1.5L12.39 6.9L18.18 7.44L13.83 11.29L15.18 17L10 13.77L4.82 17L6.17 11.29L1.82 7.44L7.61 6.9L10 1.5Z" stroke="currentColor" stroke-width="1" fill="none"/>
+      </svg>
+    {%- endif -%}
+  {%- endfor -%}
+</span>
